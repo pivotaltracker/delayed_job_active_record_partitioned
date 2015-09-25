@@ -63,6 +63,38 @@ describe Delayed::Backend::ActiveRecord::Job do
     end
   end
 
+  describe '.reserve' do
+    context 'with a custom queueing function' do
+      let(:dbms) { "OtherDB" }
+
+      let(:worker) { TestWorker.new("worker01", 5) }
+
+      before do
+        allow(Delayed::Backend::ActiveRecord::Job.connection).to receive(:adapter_name).at_least(:once).and_return(dbms)
+      end
+
+      after do
+        Delayed::Backend::ActiveRecord::Job.delete_all
+      end
+
+      before do
+        Delayed::Worker.queues = lambda do |query|
+          query.where('(queue % 8) = 1')
+        end
+      end
+
+      it 'includes jobs with queues that fit the pattern' do
+        Delayed::Backend::ActiveRecord::Job.enqueue(SampleJob.new, queue: '9')
+        expect(Delayed::Backend::ActiveRecord::Job.reserve(worker).queue).to eq('9')
+      end
+
+      it 'excludes jobs that do not fit the pattern' do
+        Delayed::Backend::ActiveRecord::Job.enqueue(SampleJob.new, queue: '8')
+        expect(Delayed::Backend::ActiveRecord::Job.reserve(worker)).to eq(nil)
+      end
+    end
+  end
+
   if ::ActiveRecord::VERSION::MAJOR < 4 || defined?(::ActiveRecord::MassAssignmentSecurity)
     context "ActiveRecord::Base.send(:attr_accessible, nil)" do
       before do
@@ -97,5 +129,14 @@ describe Delayed::Backend::ActiveRecord::Job do
       ::ActiveRecord::Base.table_name_prefix = nil
       Delayed::Backend::ActiveRecord::Job.set_delayed_job_table_name
     end
+  end
+end
+
+
+TestWorker = Struct.new(:name, :read_ahead)
+
+class SampleJob
+  def perform
+    # noop
   end
 end

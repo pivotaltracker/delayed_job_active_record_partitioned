@@ -1,7 +1,7 @@
 require "helper"
-require "delayed/backend/active_record"
+require "delayed/backend/partitioned"
 
-describe Delayed::Backend::ActiveRecord::Job do
+describe Delayed::Backend::Partitioned::Job do
   it_behaves_like "a delayed_job backend"
 
   describe "reserve_with_scope" do
@@ -11,15 +11,15 @@ describe Delayed::Backend::ActiveRecord::Job do
     let(:job)    { double(id: 1) }
 
     before do
-      allow(Delayed::Backend::ActiveRecord::Job.connection).to receive(:adapter_name).at_least(:once).and_return(dbms)
+      allow(Delayed::Backend::Partitioned::Job.connection).to receive(:adapter_name).at_least(:once).and_return(dbms)
     end
 
     context "for a dbms without a specific implementation" do
       let(:dbms) { "OtherDB" }
 
       it "uses the plain sql version" do
-        expect(Delayed::Backend::ActiveRecord::Job).to receive(:reserve_with_scope_using_default_sql).once
-        Delayed::Backend::ActiveRecord::Job.reserve_with_scope(scope, worker, Time.now)
+        expect(Delayed::Backend::Partitioned::Job).to receive(:reserve_with_scope_using_default_sql).once
+        Delayed::Backend::Partitioned::Job.reserve_with_scope(scope, worker, Time.now)
       end
     end
   end
@@ -38,28 +38,28 @@ describe Delayed::Backend::ActiveRecord::Job do
     it "returns UTC time if that is the AR default" do
       Time.zone = nil
       ActiveRecord::Base.default_timezone = :utc
-      expect(Delayed::Backend::ActiveRecord::Job.db_time_now.zone).to eq "UTC"
+      expect(Delayed::Backend::Partitioned::Job.db_time_now.zone).to eq "UTC"
     end
 
     it "returns local time if that is the AR default" do
       Time.zone = "Central Time (US & Canada)"
       ActiveRecord::Base.default_timezone = :local
-      expect(%w(CST CDT)).to include(Delayed::Backend::ActiveRecord::Job.db_time_now.zone)
+      expect(%w(CST CDT)).to include(Delayed::Backend::Partitioned::Job.db_time_now.zone)
     end
   end
 
   describe "after_fork" do
     it "calls reconnect on the connection" do
       expect(ActiveRecord::Base).to receive(:establish_connection)
-      Delayed::Backend::ActiveRecord::Job.after_fork
+      Delayed::Backend::Partitioned::Job.after_fork
     end
   end
 
   describe "enqueue" do
     it "allows enqueue hook to modify job at DB level" do
       later = described_class.db_time_now + 20.minutes
-      job = Delayed::Backend::ActiveRecord::Job.enqueue payload_object: EnqueueJobMod.new
-      expect(Delayed::Backend::ActiveRecord::Job.find(job.id).run_at).to be_within(1).of(later)
+      job = Delayed::Backend::Partitioned::Job.enqueue payload_object: EnqueueJobMod.new
+      expect(Delayed::Backend::Partitioned::Job.find(job.id).run_at).to be_within(1).of(later)
     end
   end
 
@@ -70,11 +70,11 @@ describe Delayed::Backend::ActiveRecord::Job do
       let(:worker) { TestWorker.new("worker01", 5) }
 
       before do
-        allow(Delayed::Backend::ActiveRecord::Job.connection).to receive(:adapter_name).at_least(:once).and_return(dbms)
+        allow(Delayed::Backend::Partitioned::Job.connection).to receive(:adapter_name).at_least(:once).and_return(dbms)
       end
 
       after do
-        Delayed::Backend::ActiveRecord::Job.delete_all
+        Delayed::Backend::Partitioned::Job.delete_all
       end
 
       before do
@@ -84,13 +84,13 @@ describe Delayed::Backend::ActiveRecord::Job do
       end
 
       it 'includes jobs with queues that fit the pattern' do
-        Delayed::Backend::ActiveRecord::Job.enqueue(SampleJob.new, queue: '9')
-        expect(Delayed::Backend::ActiveRecord::Job.reserve(worker).queue).to eq('9')
+        Delayed::Backend::Partitioned::Job.enqueue(SampleJob.new, queue: '9')
+        expect(Delayed::Backend::Partitioned::Job.reserve(worker).queue).to eq('9')
       end
 
       it 'excludes jobs that do not fit the pattern' do
-        Delayed::Backend::ActiveRecord::Job.enqueue(SampleJob.new, queue: '8')
-        expect(Delayed::Backend::ActiveRecord::Job.reserve(worker)).to eq(nil)
+        Delayed::Backend::Partitioned::Job.enqueue(SampleJob.new, queue: '8')
+        expect(Delayed::Backend::Partitioned::Job.reserve(worker)).to eq(nil)
       end
     end
   end
@@ -98,16 +98,16 @@ describe Delayed::Backend::ActiveRecord::Job do
   if ::ActiveRecord::VERSION::MAJOR < 4 || defined?(::ActiveRecord::MassAssignmentSecurity)
     context "ActiveRecord::Base.send(:attr_accessible, nil)" do
       before do
-        Delayed::Backend::ActiveRecord::Job.send(:attr_accessible, nil)
+        Delayed::Backend::Partitioned::Job.send(:attr_accessible, nil)
       end
 
       after do
-        Delayed::Backend::ActiveRecord::Job.send(:attr_accessible, *Delayed::Backend::ActiveRecord::Job.new.attributes.keys)
+        Delayed::Backend::Partitioned::Job.send(:attr_accessible, *Delayed::Backend::Partitioned::Job.new.attributes.keys)
       end
 
       it "is still accessible" do
-        job = Delayed::Backend::ActiveRecord::Job.enqueue payload_object: EnqueueJobMod.new
-        expect(Delayed::Backend::ActiveRecord::Job.find(job.id).handler).to_not be_blank
+        job = Delayed::Backend::Partitioned::Job.enqueue payload_object: EnqueueJobMod.new
+        expect(Delayed::Backend::Partitioned::Job.find(job.id).handler).to_not be_blank
       end
     end
   end
@@ -115,19 +115,19 @@ describe Delayed::Backend::ActiveRecord::Job do
   context "ActiveRecord::Base.table_name_prefix" do
     it "when prefix is not set, use 'delayed_jobs' as table name" do
       ::ActiveRecord::Base.table_name_prefix = nil
-      Delayed::Backend::ActiveRecord::Job.set_delayed_job_table_name
+      Delayed::Backend::Partitioned::Job.set_delayed_job_table_name
 
-      expect(Delayed::Backend::ActiveRecord::Job.table_name).to eq "delayed_jobs"
+      expect(Delayed::Backend::Partitioned::Job.table_name).to eq "delayed_jobs"
     end
 
     it "when prefix is set, prepend it before default table name" do
       ::ActiveRecord::Base.table_name_prefix = "custom_"
-      Delayed::Backend::ActiveRecord::Job.set_delayed_job_table_name
+      Delayed::Backend::Partitioned::Job.set_delayed_job_table_name
 
-      expect(Delayed::Backend::ActiveRecord::Job.table_name).to eq "custom_delayed_jobs"
+      expect(Delayed::Backend::Partitioned::Job.table_name).to eq "custom_delayed_jobs"
 
       ::ActiveRecord::Base.table_name_prefix = nil
-      Delayed::Backend::ActiveRecord::Job.set_delayed_job_table_name
+      Delayed::Backend::Partitioned::Job.set_delayed_job_table_name
     end
   end
 end

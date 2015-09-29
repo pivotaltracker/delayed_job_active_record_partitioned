@@ -1,7 +1,7 @@
 require "active_record/version"
 module Delayed
   module Backend
-    module ActiveRecord
+    module Partitioned
       # A job object that is persisted to the database.
       # Contains the work object as a YAML field.
       class Job < ::ActiveRecord::Base

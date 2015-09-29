@@ -18,7 +18,7 @@ begin
   require "protected_attributes"
 rescue LoadError # rubocop:disable HandleExceptions
 end
-require "delayed_job_active_record"
+require "delayed_job_partitioned"
 require "delayed/backend/shared_spec"
 
 Delayed::Worker.logger = Logger.new("/tmp/dj.log")

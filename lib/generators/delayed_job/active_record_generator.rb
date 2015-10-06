@@ -12,7 +12,7 @@ module DelayedJob
     source_paths << File.join(File.dirname(__FILE__), "templates")
 
     def create_migration_file
-      migration_template "migration.rb", "db/migrate/create_delayed_jobs.rb"
+      migration_template "migration.rb", "db/migrate/create_partitioned_jobs.rb"
     end
 
     def self.next_migration_number(dirname)

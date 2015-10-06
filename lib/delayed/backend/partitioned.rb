@@ -17,7 +17,7 @@ module Delayed
         before_save :set_default_run_at
 
         def self.set_delayed_job_table_name
-          delayed_job_table_name = "#{::ActiveRecord::Base.table_name_prefix}delayed_jobs"
+          delayed_job_table_name = "#{::ActiveRecord::Base.table_name_prefix}partitioned_jobs"
           self.table_name = delayed_job_table_name
         end
 

@@ -22,7 +22,6 @@ group :test do
 
   gem "coveralls", require: false
   gem "rspec", ">= 3"
-  gem "rubocop", ">= 0.23"
   gem "simplecov", require: false
 end
 

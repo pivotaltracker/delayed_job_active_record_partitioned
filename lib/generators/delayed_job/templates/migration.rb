@@ -1,5 +1,5 @@
 class CreatePartitionedJobs < ActiveRecord::Migration
-  def up
+  def self.up
     create_table :partitioned_jobs, force: true do |table|
       table.integer :priority, default: 0, null: false # Allows some jobs to jump to the front of the queue
       table.integer :attempts, default: 0, null: false # Provides for retries, but still fail eventually.
@@ -16,7 +16,7 @@ class CreatePartitionedJobs < ActiveRecord::Migration
     add_index :partitioned_jobs, [:priority, :run_at], name: "partitioned_jobs_priority"
   end
 
-  def down
+  def self.down
     drop_table :partitioned_jobs
   end
 end

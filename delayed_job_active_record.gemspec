@@ -10,5 +10,5 @@ Gem::Specification.new do |spec|
   spec.name           = "delayed_job_partitioned"
   spec.require_paths  = ["lib"]
   spec.summary        = "Partitioned backend for DelayedJob"
-  spec.version        = "0.0.3"
+  spec.version        = "0.0.4"
 end

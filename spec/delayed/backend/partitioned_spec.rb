@@ -117,14 +117,14 @@ describe Delayed::Backend::Partitioned::Job do
       ::ActiveRecord::Base.table_name_prefix = nil
       Delayed::Backend::Partitioned::Job.set_delayed_job_table_name
 
-      expect(Delayed::Backend::Partitioned::Job.table_name).to eq "delayed_jobs"
+      expect(Delayed::Backend::Partitioned::Job.table_name).to eq "partitioned_jobs"
     end
 
     it "when prefix is set, prepend it before default table name" do
       ::ActiveRecord::Base.table_name_prefix = "custom_"
       Delayed::Backend::Partitioned::Job.set_delayed_job_table_name
 
-      expect(Delayed::Backend::Partitioned::Job.table_name).to eq "custom_delayed_jobs"
+      expect(Delayed::Backend::Partitioned::Job.table_name).to eq "custom_partitioned_jobs"
 
       ::ActiveRecord::Base.table_name_prefix = nil
       Delayed::Backend::Partitioned::Job.set_delayed_job_table_name

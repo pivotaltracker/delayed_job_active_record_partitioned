@@ -2,13 +2,5 @@ mysql:
   adapter: mysql
   database: delayed_job_test
   username: root
+  password: password
   encoding: utf8
-
-postgresql:
-  adapter: postgresql
-  database: delayed_job_test
-  username: postgres
-
-sqlite3:
-  adapter: sqlite3
-  database: ":memory:"

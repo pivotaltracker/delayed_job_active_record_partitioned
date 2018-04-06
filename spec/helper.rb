@@ -35,7 +35,7 @@ ActiveRecord::Migration.verbose = false
 
 require "generators/delayed_job/templates/migration"
 ActiveRecord::Schema.define do
-  CreateDelayedJobs.up
+  CreatePartitionedJobs.up
 
   create_table :stories, primary_key: :story_id, force: true do |table|
     table.string :text

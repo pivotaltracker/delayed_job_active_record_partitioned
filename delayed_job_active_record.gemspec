@@ -4,7 +4,7 @@ Gem::Specification.new do |spec|
   spec.authors        = ["Matthew Conger-Eldeen", "Cody Sehl"]
   spec.description    = "Partitioned backend for Delayed::Job"
   spec.email          = ["mcongereldeen@pivotal.io", "csehl@pivotal.io"]
-  spec.files          = %w(CONTRIBUTING.md LICENSE.md README.md delayed_job_active_record.gemspec) + Dir["lib/**/*.rb"]
+  spec.files          = %w(README.md delayed_job_active_record.gemspec) + Dir["lib/**/*.rb"]
   spec.homepage       = "http://github.com/pivotaltracker/delayed_job_active_record_partioned"
   spec.licenses       = ["MIT"]
   spec.name           = "delayed_job_partitioned"

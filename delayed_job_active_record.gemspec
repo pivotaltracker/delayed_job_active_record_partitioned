@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
-  spec.add_dependency "activerecord", [">= 3.0", "< 5"]
-  spec.add_dependency "delayed_job",  [">= 3.0", "< 5"]
+  spec.add_dependency "activerecord", [">= 3.0", "< 6"]
+  spec.add_dependency "delayed_job",  [">= 3.0", "< 6"]
   spec.authors        = ["Matthew Conger-Eldeen", "Cody Sehl"]
   spec.description    = "Partitioned backend for Delayed::Job"
   spec.email          = ["mcongereldeen@pivotal.io", "csehl@pivotal.io"]
